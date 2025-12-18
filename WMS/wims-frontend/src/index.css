@@ -1,0 +1,13 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+/* src/index.css */
+
+/* Optional: Set a default font or body styles here. 
+  The original code assumes a system font for the `font-sans` class.
+*/
+/* body {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+} */
