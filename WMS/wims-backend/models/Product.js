@@ -30,9 +30,9 @@ const Product = sequelize.define(
       defaultValue: 10,
     },
     location: { type: DataTypes.STRING(100) },
-    // Preserved these from your uploaded files
     unit_cost: { type: DataTypes.DECIMAL(10, 2) },
     category: { type: DataTypes.STRING(50) },
+    expiration_date: { type: DataTypes.DATEONLY }, // Changed to DATEONLY for YYYY-MM-DD
   },
   {
     tableName: "products",

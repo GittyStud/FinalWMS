@@ -1,8 +1,8 @@
-const { Product, ProductMovementLog, User } = require("../models");
+const { Product, ProductMovementLog, User, AuditLog } = require("../models");
 const sequelize = require("../db");
 const { Op } = require("sequelize");
 
-// --- 1. Get Movement Logs ---
+// --- 1. Get Movement Logs (Inventory Changes) ---
 exports.getMovementLogs = async (req, res) => {
   try {
     const logs = await ProductMovementLog.findAll({
@@ -13,23 +13,19 @@ exports.getMovementLogs = async (req, res) => {
       order: [["timestamp", "DESC"]],
     });
 
-    // Format for frontend
     const formatted = logs.map((l) => ({
       id: l.id,
-      product_sku: l.product?.sku || "Deleted",
-      product_name: l.product?.name || "Deleted",
+      product_sku: l.product?.sku || "N/A",
+      product_name: l.product?.name || "Deleted Product",
       user_name: l.user?.username || "System",
       movement_type: l.movement_type,
       quantity_change: l.quantity_change,
-      from_location: l.from_location,
-      to_location: l.to_location,
-      transaction_notes: l.transaction_notes,
       timestamp: l.timestamp,
     }));
 
     res.status(200).json({ success: true, data: formatted });
   } catch (error) {
-    console.error("Reporting Error:", error);
+    console.error(error);
     res.status(500).json({ success: false, message: "Failed to fetch logs." });
   }
 };
@@ -38,14 +34,11 @@ exports.getMovementLogs = async (req, res) => {
 exports.getLowStock = async (req, res) => {
   try {
     const products = await Product.findAll({
-      where: {
-        quantity: { [Op.lte]: sequelize.col("reorder_point") },
-      },
+      where: { quantity: { [Op.lte]: sequelize.col("reorder_point") } },
       order: [["quantity", "ASC"]],
     });
     res.status(200).json({ success: true, data: products });
   } catch (error) {
-    console.error("Low Stock Error:", error);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch low stock." });
@@ -66,9 +59,36 @@ exports.getLocationSummary = async (req, res) => {
     });
     res.status(200).json({ success: true, data: summary });
   } catch (error) {
-    console.error("Summary Error:", error);
     res
       .status(500)
       .json({ success: false, message: "Failed to fetch summary." });
+  }
+};
+
+// --- 4. Get System Audit Logs (Admin Actions) ---
+exports.getSystemAuditLogs = async (req, res) => {
+  try {
+    const logs = await AuditLog.findAll({
+      include: [{ model: User, as: "user", attributes: ["username", "role"] }],
+      order: [["createdAt", "DESC"]],
+      limit: 100, // Limit to last 100 actions for performance
+    });
+
+    const formatted = logs.map((l) => ({
+      id: l.id,
+      user_name: l.user?.username || "Unknown",
+      role: l.user?.role || "-",
+      action: l.action,
+      details: l.details,
+      ip: l.ip_address,
+      timestamp: l.createdAt,
+    }));
+
+    res.status(200).json({ success: true, data: formatted });
+  } catch (error) {
+    console.error("Audit Log Error:", error);
+    res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch audit logs." });
   }
 };
