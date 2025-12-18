@@ -34,7 +34,7 @@ WMS Central is a high-performance, responsive web application designed to stream
 
     Movement Logs: Audit trail of every stock change (who moved what and when).
 
-    🛠️ Tech Stack
+  🛠️ Tech Stack
 
     Frontend: React 19, Vite, Tailwind CSS
 
