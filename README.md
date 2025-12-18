@@ -61,7 +61,9 @@ WMS Central is a high-performance, responsive web application designed to stream
       cd warehouse management system/wims-frontend
       npm install
       npm run dev
-      
+
+    Import database:
+      wims_database.sql
 
 Configure the API:
 Ensure your backend server is running. Update the baseURL in src/hooks/useAuth.jsx if your server uses a port other than 3001.
