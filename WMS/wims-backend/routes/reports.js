@@ -22,4 +22,12 @@ router.get(
   reportingController.getLocationSummary
 );
 
+// New Route: System Audit Logs (Admin Only)
+router.get(
+  "/audit",
+  authenticate,
+  authorize(["Admin"]),
+  reportingController.getSystemAuditLogs
+);
+
 module.exports = router;

@@ -18,7 +18,6 @@ exports.getProducts = async (req, res) => {
 exports.createProduct = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
-    // 1. Destructure ALL fields including new SRS requirements
     const {
       name,
       sku,
@@ -31,7 +30,6 @@ exports.createProduct = async (req, res) => {
       description,
     } = req.body;
 
-    // 2. Validate Basic
     if (!name || !sku || quantity === undefined) {
       await transaction.rollback();
       return res
@@ -42,7 +40,6 @@ exports.createProduct = async (req, res) => {
         });
     }
 
-    // 3. Check SKU
     const existing = await Product.findOne({ where: { sku } });
     if (existing) {
       await transaction.rollback();
@@ -51,7 +48,6 @@ exports.createProduct = async (req, res) => {
         .json({ success: false, message: "SKU already exists." });
     }
 
-    // 4. Create
     const product = await Product.create(
       {
         name,
@@ -67,7 +63,6 @@ exports.createProduct = async (req, res) => {
       { transaction }
     );
 
-    // 5. Log Movement (Initial Stock)
     if (quantity > 0) {
       await ProductMovementLog.create(
         {
@@ -82,7 +77,6 @@ exports.createProduct = async (req, res) => {
       );
     }
 
-    // 6. Audit Log
     await AuditLog.create(
       {
         user_id: req.user.id,
@@ -109,6 +103,7 @@ exports.updateProduct = async (req, res) => {
   const transaction = await sequelize.transaction();
   try {
     const { id } = req.params;
+    // Explicitly grab all fields from body
     const {
       name,
       quantity,
@@ -119,6 +114,8 @@ exports.updateProduct = async (req, res) => {
       expiration_date,
       description,
     } = req.body;
+
+    console.log(`Updating Product ID ${id} with:`, req.body); // Debug Log
 
     const product = await Product.findByPk(id);
     if (!product) {
@@ -140,17 +137,17 @@ exports.updateProduct = async (req, res) => {
         {
           product_id: product.id,
           user_id: req.user.id,
-          movement_type: "ADJUSTMENT",
+          movement_type: "ADJUSTMENT", // Using 'ADJUSTMENT' or 'IN'/'OUT' depending on your ENUM preference
           quantity_change: diff,
           from_location: product.location,
           to_location: location,
-          transaction_notes: `Manual Adjustment (${type})`,
+          transaction_notes: `Manual Update (${type})`,
         },
         { transaction }
       );
     }
 
-    // Update Fields
+    // Perform Update
     await product.update(
       {
         name,
@@ -159,7 +156,7 @@ exports.updateProduct = async (req, res) => {
         category,
         reorder_point,
         unit_cost,
-        expiration_date,
+        expiration_date, // Ensure this matches DB column exactly
         description,
       },
       { transaction }

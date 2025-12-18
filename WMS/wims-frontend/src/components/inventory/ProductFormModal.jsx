@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import Modal from "../ui/Modal";
 
+// Predefined lists for standardizing inputs
 const LOCATIONS = [
   "Aisle 1 - Shelf A",
   "Aisle 1 - Shelf B",
@@ -10,22 +11,12 @@ const LOCATIONS = [
   "Aisle 3 - Shelf B",
   "Aisle 4 - Shelf A",
   "Aisle 4 - Shelf B",
-  "Aisle 5 - Shelf A",
-  "Aisle 5 - Shelf B",
   "Warehouse Zone A",
   "Warehouse Zone B",
-  "Warehouse Zone C",
   "Cold Storage 1",
   "Cold Storage 2",
-  "Deep Freeze",
-  "Hazardous Materials Room",
   "Receiving Dock",
   "Shipping Bay",
-  "Returns Processing",
-  "Bulk Storage South",
-  "Bulk Storage North",
-  "Mezzanine Level 1",
-  "Mezzanine Level 2",
   "Overflow Tent",
 ];
 
@@ -45,21 +36,8 @@ const CATEGORIES = [
   "Toys",
   "Health",
   "Beauty",
-  "Gardening",
   "Industrial Hardware",
   "Safety Equipment",
-  "Packaging Materials",
-  "Kitchenware",
-  "Sporting Goods",
-  "Pet Supplies",
-  "Baby Products",
-  "Electrical Components",
-  "Plumbing Supplies",
-  "Textiles",
-  "Footwear",
-  "Home Decor",
-  "Stationery",
-  "Giftware",
 ];
 
 const ProductFormModal = ({
@@ -92,6 +70,18 @@ const ProductFormModal = ({
     if (!isOpen) return;
 
     if (isEdit && productToEdit) {
+      // Helper to format date for input type="date" (YYYY-MM-DD)
+      let formattedDate = "";
+      // Check for expiration_date or expiryDate property
+      const dateVal = productToEdit.expiration_date || productToEdit.expiryDate;
+
+      if (dateVal) {
+        const dateObj = new Date(dateVal);
+        if (!isNaN(dateObj.getTime())) {
+          formattedDate = dateObj.toISOString().split("T")[0];
+        }
+      }
+
       setFormData({
         name: productToEdit.name || "",
         sku: productToEdit.sku || "",
@@ -100,9 +90,7 @@ const ProductFormModal = ({
         location: productToEdit.location || "",
         category: productToEdit.category || "",
         unit_cost: productToEdit.unit_cost || 0,
-        expiration_date: productToEdit.expiration_date
-          ? productToEdit.expiration_date.split("T")[0]
-          : "",
+        expiration_date: formattedDate,
         description: productToEdit.description || "",
       });
     } else {

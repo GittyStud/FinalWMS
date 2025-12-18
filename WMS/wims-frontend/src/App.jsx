@@ -5,6 +5,8 @@ import InventoryManagementPage from "./pages/InventoryManagementPage";
 import AdminUserManagementPage from "./pages/AdminUserManagementPage";
 import ReportsAndAnalyticsPage from "./pages/ReportsAndAnalyticsPage";
 import DashboardPage from "./pages/DashboardPage";
+import SupplierManagementPage from "./pages/SupplierManagementPage"; // New
+import OrderManagementPage from "./pages/OrderManagementPage"; // New
 import UnauthorizedView from "./components/ui/UnauthorizedView";
 
 import {
@@ -14,6 +16,8 @@ import {
   BarChart2,
   Menu,
   LayoutDashboard,
+  Truck,
+  ClipboardList,
   X,
 } from "lucide-react";
 
@@ -35,21 +39,14 @@ const NavButton = ({ isActive, onClick, icon: Icon, label }) => (
 
 const Header = ({ user, handleLogout, toggleSidebar }) => (
   <header className="flex items-center justify-between p-4 bg-white shadow-md border-b border-gray-100 md:hidden">
-    <div className="flex items-center gap-3">
+    <div className="flex items-center gap-2">
       <button
         onClick={toggleSidebar}
         className="text-gray-500 hover:text-indigo-600"
       >
         <Menu className="w-6 h-6" />
       </button>
-      <div>
-        <h1 className="text-lg font-bold text-gray-800 leading-tight">WIMS</h1>
-        <p className="text-xs text-gray-500">
-          {user?.first_name
-            ? `${user.first_name} ${user.last_name}`
-            : user?.username}
-        </p>
-      </div>
+      <h1 className="text-xl font-bold text-gray-800">WIMS</h1>
     </div>
     <button onClick={handleLogout} className="text-red-600 hover:text-red-800">
       <LogIn className="w-5 h-5" />
@@ -78,6 +75,18 @@ const Sidebar = ({
       icon: Package,
       roles: ["Admin", "Manager", "Staff"],
     },
+    {
+      id: "orders",
+      label: "Orders",
+      icon: ClipboardList,
+      roles: ["Admin", "Manager"],
+    }, // New
+    {
+      id: "suppliers",
+      label: "Suppliers",
+      icon: Truck,
+      roles: ["Admin", "Manager"],
+    }, // New
     {
       id: "reports",
       label: "Reports",
@@ -174,6 +183,21 @@ const App = () => {
         return <DashboardPage />;
       case "inventory":
         return <InventoryManagementPage />;
+
+      // New Routes
+      case "suppliers":
+        return ["Admin", "Manager"].includes(user.role) ? (
+          <SupplierManagementPage />
+        ) : (
+          <UnauthorizedView />
+        );
+      case "orders":
+        return ["Admin", "Manager"].includes(user.role) ? (
+          <OrderManagementPage />
+        ) : (
+          <UnauthorizedView />
+        );
+
       case "users":
         return user.role === "Admin" ? (
           <AdminUserManagementPage />
